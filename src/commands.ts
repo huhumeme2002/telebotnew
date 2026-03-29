@@ -38,13 +38,15 @@ export function registerCommands(bot: TelegramBot) {
 
     try {
       const res = await api.createClaudeCodeKey(planId, name);
-      if (res.key) {
-        logKey('claudecode', planId, res.key, name, String(msg.from!.id));
+      const apiKey = res.api_key || res.key;
+      if (apiKey) {
+        const expiry = res.expiry ? res.expiry.split('T')[0] : formatExpiry(plan.days);
+        logKey('claudecode', planId, apiKey, name, String(msg.from!.id));
         bot.sendMessage(chatId,
           `✅ Tạo key thành công!\n\n` +
-          `🔑 Key: \`${res.key}\`\n` +
+          `🔑 Key: \`${apiKey}\`\n` +
           `📦 Gói: ${plan.name} (${plan.credit})\n` +
-          `📅 Hết hạn: ${formatExpiry(plan.days)}`,
+          `📅 Hết hạn: ${expiry}`,
           { parse_mode: 'Markdown' }
         );
       } else {
@@ -183,11 +185,12 @@ export function registerCommands(bot: TelegramBot) {
 
     try {
       const res = await api.upgradeKey(key, newPlan, 'upgraded');
-      if (res.key) {
-        logKey('claudecode', newPlan, res.key, 'upgraded', String(msg.from!.id));
+      const upgradedKey = res.api_key || res.key;
+      if (upgradedKey) {
+        logKey('claudecode', newPlan, upgradedKey, 'upgraded', String(msg.from!.id));
         bot.sendMessage(chatId,
           `✅ Nâng gói thành công!\n\n` +
-          `🔑 Key: \`${res.key}\`\n` +
+          `🔑 Key: \`${upgradedKey}\`\n` +
           `📦 Gói mới: ${plan.name} (${plan.credit})`,
           { parse_mode: 'Markdown' }
         );
